@@ -10,9 +10,9 @@
    Content-Type: application/json
 
    {
-     "name": "Ash Ketchum",
-     "position": "Pokemon Trainer",
-     "salary": 8000
+     "name": "Maria Silva",
+     "position": "Designer",
+     "salary": 7000
    }
 
    ###
