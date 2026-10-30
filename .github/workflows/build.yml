@@ -1,5 +1,8 @@
 name: Build
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main ]
@@ -20,7 +23,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restaurar dependências
-        run: dotnet restore
+        run: dotnet restore EmployeeApi.sln
 
       - name: Compilar
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build EmployeeApi.sln --no-restore --configuration Release
+
+      - name: Executar testes de integração
+        run: dotnet test EmployeeApi.sln --no-build --configuration Release
