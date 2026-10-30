@@ -1,19 +1,31 @@
-   @host = http://localhost:5000
+@host = http://localhost:5000
+@employeeId = 1
 
-   GET {{host}}/employees
+### Listar funcionários
+GET {{host}}/employees
 
-   ###
-   GET {{host}}/employees/1
+### Buscar funcionário (404 se não existir)
+GET {{host}}/employees/{{employeeId}}
 
-   ###
-   POST {{host}}/employees
-   Content-Type: application/json
+### Criar funcionário (201 com endereço no cabeçalho Location)
+POST {{host}}/employees
+Content-Type: application/json
 
-   {
-     "name": "Maria Silva",
-     "position": "Designer",
-     "salary": 7000
-   }
+{
+  "name": "Maria Silva",
+  "position": "Designer",
+  "salary": 7000
+}
 
-   ###
-   DELETE {{host}}/employees/1
+### Exemplo inválido (400 com erros de validação)
+POST {{host}}/employees
+Content-Type: application/json
+
+{
+  "name": "   ",
+  "position": "Designer",
+  "salary": -1
+}
+
+### Remover funcionário (204; repetir retorna 404)
+DELETE {{host}}/employees/{{employeeId}}

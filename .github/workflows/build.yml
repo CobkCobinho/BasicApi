@@ -1,5 +1,8 @@
 name: Build
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main ]
@@ -12,15 +15,18 @@ jobs:
 
     steps:
       - name: Baixar o código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar o .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
 
       - name: Restaurar dependências
-        run: dotnet restore
+        run: dotnet restore EmployeeApi.sln
 
       - name: Compilar
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build EmployeeApi.sln --no-restore --configuration Release
+
+      - name: Executar testes de integração
+        run: dotnet test EmployeeApi.sln --no-build --configuration Release
