@@ -1,3 +1,4 @@
+using EmployeeApi.Contracts;
 using EmployeeApi.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,9 +41,15 @@ public class EmployeesController : ControllerBase
 
     // POST /employees
     [HttpPost]
-    public ActionResult<Employee> Create(Employee employee)
+    public ActionResult<Employee> Create(CreateEmployeeRequest request)
     {
-        employee.Id = _nextId++;
+        var employee = new Employee
+        {
+            Id = _nextId++,
+            Name = request.Name.Trim(),
+            Position = request.Position.Trim(),
+            Salary = request.Salary!.Value
+        };
         _employees.Add(employee);
 
         return CreatedAtAction(nameof(GetById), new { id = employee.Id }, employee);
