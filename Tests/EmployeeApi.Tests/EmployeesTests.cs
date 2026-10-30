@@ -94,6 +94,11 @@ public class EmployeesTests : IClassFixture<WebApplicationFactory<Program>>, IDi
             name = "Delete test", position = "QA", salary = 1m
         });
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var unrelated = await _client.PostAsJsonAsync("/employees", new
+        {
+            name = "Keep this employee", position = "QA", salary = 1m
+        });
+        Assert.Equal(HttpStatusCode.Created, unrelated.StatusCode);
         var location = created.Headers.Location;
         using var removed = await _client.DeleteAsync(location);
         using var missing = await _client.GetAsync(location);
@@ -101,6 +106,8 @@ public class EmployeesTests : IClassFixture<WebApplicationFactory<Program>>, IDi
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, removedAgain.StatusCode);
+        using var stillPresent = await _client.GetAsync(unrelated.Headers.Location);
+        Assert.Equal(HttpStatusCode.OK, stillPresent.StatusCode);
     }
 
     [Fact]
@@ -139,6 +146,6 @@ public class EmployeesTests : IClassFixture<WebApplicationFactory<Program>>, IDi
         Assert.Equal(ids.Length, ids.Distinct().Count());
         var stored = await _client.GetFromJsonAsync<List<Employee>>("/employees");
         Assert.NotNull(stored);
-        Assert.All(ids, id => Assert.Single(stored.Where(employee => employee.Id == id)));
+        Assert.All(ids, id => Assert.Single(stored, employee => employee.Id == id));
     }
 }
