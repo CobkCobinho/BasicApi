@@ -1,7 +1,10 @@
+using EmployeeApi;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Habilita o uso de Controllers
 builder.Services.AddControllers();
+builder.Services.AddSingleton<EmployeeStore>();
 
 var app = builder.Build();
 
