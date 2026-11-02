@@ -17,16 +17,16 @@ jobs:
       - name: Baixar o código
         uses: actions/checkout@v7
 
-      - name: Instalar o .NET 8
+      - name: Instalar o .NET 10
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restaurar dependências
         run: dotnet restore EmployeeApi.sln
 
       - name: Compilar
-        run: dotnet build EmployeeApi.sln --no-restore --configuration Release
+        run: dotnet build EmployeeApi.sln --no-restore --configuration Release -warnaserror
 
-      - name: Executar testes de integração
+      - name: Executar testes unitários e de integração
         run: dotnet test EmployeeApi.sln --no-build --configuration Release
