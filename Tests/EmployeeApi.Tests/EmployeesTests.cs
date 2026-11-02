@@ -8,16 +8,21 @@ using Xunit;
 
 namespace EmployeeApi.Tests;
 
-public class EmployeesTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
+public class EmployeesTests : IDisposable
 {
+    private readonly WebApplicationFactory<Program> _factory = new();
     private readonly HttpClient _client;
 
-    public EmployeesTests(WebApplicationFactory<Program> factory)
+    public EmployeesTests()
     {
-        _client = factory.CreateClient();
+        _client = _factory.CreateClient();
     }
 
-    public void Dispose() => _client.Dispose();
+    public void Dispose()
+    {
+        _client.Dispose();
+        _factory.Dispose();
+    }
 
     [Fact]
     public async Task Create_AssignsIdAndReturnsReadableLocation()
@@ -117,6 +122,35 @@ public class EmployeesTests : IClassFixture<WebApplicationFactory<Program>>, IDi
         using var delete = await _client.DeleteAsync("/employees/-1");
         Assert.Equal(HttpStatusCode.NotFound, read.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, delete.StatusCode);
+    }
+
+    [Fact]
+    public async Task SeparateApplications_DoNotShareEmployees()
+    {
+        using var created = await _client.PostAsJsonAsync("/employees", new
+        {
+            name = "Somente nesta aplicação", position = "QA", salary = 1m
+        });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var otherFactory = new WebApplicationFactory<Program>();
+        using var otherClient = otherFactory.CreateClient();
+        var employees = await otherClient.GetFromJsonAsync<List<Employee>>("/employees");
+        Assert.NotNull(employees);
+        Assert.Equal(new[] { 1, 2 }, employees.Select(employee => employee.Id));
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{")]
+    [InlineData("{\"name\":\"Ana\",\"position\":\"QA\",\"salary\":\"inválido\"}")]
+    public async Task Create_InvalidJsonReturnsBadRequestWithoutSaving(string json)
+    {
+        using var body = new StringContent(json, Encoding.UTF8, "application/json");
+        using var response = await _client.PostAsync("/employees", body);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var employees = await _client.GetFromJsonAsync<List<Employee>>("/employees");
+        Assert.NotNull(employees);
+        Assert.Equal(2, employees.Count);
     }
 
     [Fact]
