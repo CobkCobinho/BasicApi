@@ -1,12 +1,12 @@
 # Employee API
 
-API REST em **C# e ASP.NET Core (.NET 8)** para cadastrar, listar, consultar e remover funcionários.
+API REST em **C# e ASP.NET Core (.NET 10)** para cadastrar, listar, consultar e remover funcionários.
 
-Os dados ficam **em memória**: ao reiniciar a aplicação, tudo volta ao estado inicial. A lista começa com dois funcionários de exemplo. O acesso simultâneo é sincronizado dentro de cada processo da API.
+Os dados ficam **em memória**: ao reiniciar a aplicação, tudo volta ao estado inicial. A lista começa com dois funcionários de exemplo. O `EmployeeStore` compartilha essa lista entre as requisições da mesma instância e sincroniza o acesso simultâneo.
 
 ## Requisitos
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - Git para clonar o repositório.
 
 ## Como rodar
@@ -72,20 +72,22 @@ dotnet build EmployeeApi.sln
 dotnet test EmployeeApi.sln
 ```
 
-Os testes de integração usam **xUnit** e o servidor em memória do ASP.NET Core. Cobrem cadastro, validação, limites dos campos, geração de ID, consulta pelo endereço retornado, exclusão, IDs inexistentes e cadastros simultâneos com leitura da lista.
+São **38 testes com xUnit**: 20 unitários para as regras de validação e o armazenamento em memória, e 18 de integração com o servidor em memória do ASP.NET Core. Cobrem cadastro, limites dos campos, geração de ID, consulta pelo endereço retornado, exclusão, IDs inexistentes, JSON inválido e cadastros simultâneos com leitura da lista. Cada teste HTTP inicia sua própria aplicação, sem compartilhar funcionários com outros testes.
 
-O GitHub Actions restaura as dependências, compila a solução em Release e executa os testes em pushes e pull requests para `main`.
+O GitHub Actions usa o .NET 10, restaura as dependências, compila a solução em Release sem permitir avisos e executa os testes em pushes e pull requests para `main`.
 
 ## Estrutura
 
 ```text
 BasicApi/
 ├── Contracts/CreateEmployeeRequest.cs    # Entrada e validação do cadastro
-├── Controllers/EmployeesController.cs    # Endpoints e armazenamento em memória
+├── Controllers/EmployeesController.cs    # Endpoints HTTP
+├── EmployeeStore.cs                      # Lista em memória e acesso sincronizado
 ├── Models/Employee.cs                   # Modelo retornado pela API
-├── Tests/EmployeeApi.Tests/              # Testes de integração
+├── Tests/EmployeeApi.Tests/              # Testes unitários e de integração
 ├── Program.cs                           # Inicialização da aplicação
-├── EmployeeApi.csproj                   # Projeto web (.NET 8)
+├── EmployeeApi.csproj                   # Projeto web (.NET 10)
+├── global.json                          # Seleção do SDK .NET 10
 ├── EmployeeApi.sln                      # Solução com a API e os testes
 ├── EmployeeApi.http                     # Exemplos de requisições
 └── .github/workflows/build.yml           # Compilação e testes automáticos
